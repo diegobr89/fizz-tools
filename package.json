@@ -1,0 +1,66 @@
+{
+	"name": "fizz-tools",
+	"displayName": "FizzTools",
+	"description": "Fizzmod toolset vscode plugin",
+	"version": "0.0.1",
+	"publisher": "diego.brusa",
+	"repository": "",
+	"icon": "images/icon-round.png",
+	"engines": {
+		"vscode": "^1.34.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:extension.toggle-sls-debug",
+		"onCommand:extension.ticket-viewer"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.toggle-sls-debug",
+				"title": "Togle SLS debug",
+				"category": "FizzTools",
+				"icon": {
+					"dark": "images/sls-debug-24.png",
+					"light": "images/sls-debug-24.png"
+				}
+			},
+			{
+        "command": "extension.ticket-viewer",
+        "title": "Ticket viewer",
+        "category": "FizzTools"
+      }
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "extension.toggle-sls-debug",
+					"group": "navigation"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "tslint -p ./",
+		"watch": "tsc -watch -p ./"
+	},
+	"devDependencies": {
+		"@types/node": "^10.14.17",
+		"@types/vscode": "^1.34.0",
+		"@types/yaml":"^1.2.0",
+		"tslint": "^5.16.0",
+		"typescript": "^3.5.1"
+	},
+	"dependencies": {
+		"@types/yaml": "^1.2.0",
+		"yaml": "^1.7.2"
+	},
+	"extensionDependencies": [
+		"ms-azuretools.vscode-docker"
+	]
+}
