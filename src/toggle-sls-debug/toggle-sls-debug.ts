@@ -19,7 +19,11 @@ interface VscodeLaunchConfigItem {
 	request: string,
 	name: string,
 	remoteRoot: string,
-	preLaunchTask: string
+	preLaunchTask: string,
+	program?: string,
+	env?: object,
+	args?: Array<string>,
+	port?: number
 }
 
 interface VscodeTasksItem {
@@ -122,6 +126,24 @@ export default class ToggleSlsDebug extends FizzTools {
 			preLaunchTask: "docker_restart"
 		});
 
+		config.push({
+			type: "node",
+			request: "launch",
+			name: "Debug tests",
+			program: "${workspaceFolder}/node_modules/mocha/bin/mocha",
+			env: {
+				MS_PATH: "src",
+				TEST_ENV: "true"
+			},
+			args: [
+				"--inspect-brk",
+				"${workspaceFolder}/tests/**/*.js"
+			],
+			remoteRoot: "",
+			preLaunchTask: "",
+			port: 9229
+		})
+
 		await launchFile.setKey('configurations',config);
 		return true;
 	}
@@ -173,7 +195,7 @@ export default class ToggleSlsDebug extends FizzTools {
 
 	async _startDebugging() {
 		// await this._restartDocker();
-		return vscode.commands.executeCommand('workbench.action.debug.start');
+		//return vscode.commands.executeCommand('workbench.action.debug.start');
 	}
 
 	_isDockerExtInstalled() {
@@ -184,7 +206,7 @@ export default class ToggleSlsDebug extends FizzTools {
 	}
 
 	async _getNecessaryFiles(): Promise<NecessaryFiles> {
-		const sls = await vscode.workspace.findFiles('serverless.yml','**/node_modules/**', 1);
+		const sls = await vscode.workspace.findFiles('{serverless.yml,serverless.js}','**/node_modules/**', 1);
 		const docker = await vscode.workspace.findFiles('docker-compose.yml','**/node_modules/**', 1);
 		const packageJson = await vscode.workspace.findFiles('package.json','**/node_modules/**', 1);
 		const result = { sls: {}, docker: {}, packageJson: {} };

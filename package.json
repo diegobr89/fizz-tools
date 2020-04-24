@@ -29,10 +29,10 @@
 				}
 			},
 			{
-        "command": "extension.ticket-viewer",
-        "title": "Ticket viewer",
-        "category": "FizzTools"
-      }
+				"command": "extension.ticket-viewer",
+				"title": "Ticket viewer",
+				"category": "FizzTools"
+			}
 		],
 		"menus": {
 			"editor/title": [
@@ -52,7 +52,7 @@
 	"devDependencies": {
 		"@types/node": "^10.14.17",
 		"@types/vscode": "^1.34.0",
-		"@types/yaml":"^1.2.0",
+		"@types/yaml": "^1.2.0",
 		"tslint": "^5.16.0",
 		"typescript": "^3.5.1"
 	},
