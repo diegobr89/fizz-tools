@@ -1,4 +1,5 @@
 out
 node_modules
+.directory
 .vscode-test/
 *.vsix
