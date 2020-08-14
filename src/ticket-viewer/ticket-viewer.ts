@@ -1,20 +1,17 @@
 import FizzTools from '../fizz-tools';
-import * as vscode from 'vscode';
+import { commands, extensions, ExtensionContext, Uri } from 'vscode';
 import { GitExtension } from '../interfaces/git';
-import * as http from 'http';
-import { rejects } from 'assert';
 
 const JIRA_URL = 'https://fizzmod.atlassian.net/browse/';
-
 
 export default class TicketViewer extends FizzTools {
 
 	gitRepo:any;
 
-	constructor(context: vscode.ExtensionContext) {
+	constructor(context: ExtensionContext) {
 		super(context);
 
-		const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git');
+		const gitExtension = extensions.getExtension<GitExtension>('vscode.git');
 
 		if(!gitExtension)
 			throw 'Cannot get git extension instance';
@@ -44,46 +41,12 @@ export default class TicketViewer extends FizzTools {
 
 		const tkName = branchName.replace(regex,'$1');
 
-		await vscode.commands.executeCommand('vscode.open',
-			vscode.Uri.parse(JIRA_URL + tkName));
+		await commands.executeCommand('vscode.open',
+			Uri.parse(JIRA_URL + tkName));
+
+		// this.openWebView('test',JIRA_URL + tkName);
 
 		return true;
-	}
-
-	async openWebView(title:string, url: string) {
-		const panel = vscode.window.createWebviewPanel(
-			'jiraTicket',
-			title,
-			vscode.ViewColumn.One,
-			{
-				enableScripts: true
-			}
-		);
-		panel.webview.html = await this.getWebviewContent(url);
-	}
-
-	getWebviewContent(url: string): Promise<string> {
-		return new Promise((resolve, rejects) => {
-			let output: string = '';
-
-			const req = http.request(new URL(url), (res) => {
-				res.setEncoding('utf8');
-
-				res.on('data', chunk => {
-					output += chunk;
-				});
-
-				res.on('end', () => {
-					return resolve(output);
-				});
-			});
-
-			req.on('error', err => {
-				return rejects(err)
-			});
-
-			req.end();
-		});
 	}
 
 }

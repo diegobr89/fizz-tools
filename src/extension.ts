@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 import { ToggleSlsDebug } from './toggle-sls-debug/';
 import { TicketViewer } from './ticket-viewer/';
+import { JanisDbConnString } from './janis-db-conn-string';
+import { PackageDocs } from './package-docs';
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -10,6 +12,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 		new ToggleSlsDebug(context).subscribe();
 		new TicketViewer(context).subscribe();
+		new JanisDbConnString(context).subscribe();
+		new PackageDocs(context).subscribe();
 
 	} catch(error) {
 		vscode.window.showErrorMessage(error || error.message);

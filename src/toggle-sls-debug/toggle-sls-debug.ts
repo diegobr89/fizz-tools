@@ -1,18 +1,19 @@
 import FizzTools from '../fizz-tools';
+import { JanisWorkspaceHelper, MainFiles } from '../janis-workspace-helper';
 import { ExtensionStorage } from '../extension-storage';
 import { VscodeStorage } from '../vscode-storage';
 import { promises as fsPromises } from 'fs';
 import * as vscode from 'vscode';
 import * as yaml from 'yaml';
-import * as childProcess from 'child_process';
+// import * as childProcess from 'child_process';
 
 const DEBUG_MODE_KEY = 'debugMode';
 
-interface NecessaryFiles {
-	sls: any,
-	docker: any,
-	packageJson: any
-}
+// interface NecessaryFiles {
+// 	sls: any,
+// 	docker: any,
+// 	packageJson: any
+// }
 
 interface VscodeLaunchConfigItem {
 	type: string,
@@ -43,24 +44,24 @@ export default class ToggleSlsDebug extends FizzTools {
 
 	async onRun() {
 
-		const necessaryFiles = await this._getNecessaryFiles();
+		const necessaryFiles = await JanisWorkspaceHelper.getMainFiles();
 
-		if(!this._isValidSlsWorkspace(necessaryFiles))
+		if(!this.isValidSlsWorkspace(necessaryFiles))
 			throw 'Invalid janis sls workspace';
 
-		if(!this._isDockerExtInstalled())
+		if(!this.isDockerExtInstalled())
 			throw 'Docker extension must be installed';
 
 		const debugMode = await this.storage.getKey(DEBUG_MODE_KEY);
 		const toggleState = !debugMode;
 
-		await this._modifyPackageJson(necessaryFiles, toggleState);
-		await this._modifyDockerCompose(necessaryFiles, toggleState);
-		await this._modifyLaunchJson(toggleState);
-		await this._modifyTasksJson(toggleState);
+		await this.modifyPackageJson(necessaryFiles, toggleState);
+		await this.modifyDockerCompose(necessaryFiles, toggleState);
+		await this.modifyLaunchJson(toggleState);
+		await this.modifyTasksJson(toggleState);
 
 		if(toggleState)
-			await this._startDebugging();
+			await this.startDebugging();
 		else
 			await vscode.window.showInformationMessage('SlS debug disabled!');
 
@@ -71,7 +72,7 @@ export default class ToggleSlsDebug extends FizzTools {
 
 	}
 
-	async _modifyDockerCompose(necFiles: NecessaryFiles, setDebugOn: boolean) {
+	private async modifyDockerCompose(necFiles: MainFiles, setDebugOn: boolean) {
 		const data = await fsPromises.readFile(necFiles.docker.fsPath);
 		const fileContent = data.toString();
 		const yamlJson = yaml.parse(fileContent);
@@ -93,7 +94,7 @@ export default class ToggleSlsDebug extends FizzTools {
 		return true;
 	}
 
-	async _modifyPackageJson(necFiles: NecessaryFiles, setDebugOn: boolean) {
+	private async modifyPackageJson(necFiles: MainFiles, setDebugOn: boolean) {
 		const data = await fsPromises.readFile(necFiles.packageJson.fsPath);
 		const fileContent = data.toString();
 		const pkgJson = JSON.parse(fileContent);
@@ -107,7 +108,7 @@ export default class ToggleSlsDebug extends FizzTools {
 		return true;
 	}
 
-	async _modifyLaunchJson(setDebugOn: boolean) {
+	private async modifyLaunchJson(setDebugOn: boolean) {
 		const launchFile = new VscodeStorage('launch.json');
 		let config = <Array<VscodeLaunchConfigItem>> await launchFile.getKey('configurations');
 
@@ -148,7 +149,7 @@ export default class ToggleSlsDebug extends FizzTools {
 		return true;
 	}
 
-	async _modifyTasksJson(setDebugOn: boolean) {
+	private async modifyTasksJson(setDebugOn: boolean) {
 		const tasksFile = new VscodeStorage('tasks.json');
 		let config = <Array<VscodeTasksItem>> await tasksFile.getKey('tasks');
 
@@ -193,32 +194,19 @@ export default class ToggleSlsDebug extends FizzTools {
 	// 	return true;
 	// }
 
-	async _startDebugging() {
+	private async startDebugging() {
 		// await this._restartDocker();
 		//return vscode.commands.executeCommand('workbench.action.debug.start');
 	}
 
-	_isDockerExtInstalled() {
+	private isDockerExtInstalled() {
 		const ext = vscode.extensions.getExtension('ms-azuretools.vscode-docker');
 		if(ext)
 			return ext.isActive;
 		return false;
 	}
 
-	async _getNecessaryFiles(): Promise<NecessaryFiles> {
-		const sls = await vscode.workspace.findFiles('{serverless.yml,serverless.js}','**/node_modules/**', 1);
-		const docker = await vscode.workspace.findFiles('docker-compose.yml','**/node_modules/**', 1);
-		const packageJson = await vscode.workspace.findFiles('package.json','**/node_modules/**', 1);
-		const result = { sls: {}, docker: {}, packageJson: {} };
-		if(sls && docker && sls.length > 0 && docker.length > 0){
-			result.sls = sls.pop() || {};
-			result.docker = docker.pop() || {};
-			result.packageJson = packageJson.pop() || {};
-		}
-		return result;
-	}
-
-	_isValidSlsWorkspace(necFiles: NecessaryFiles) {
+	private isValidSlsWorkspace(necFiles: MainFiles) {
 		if(necFiles.sls.fsPath, necFiles.docker.fsPath)
 			return true;
 		return false;
